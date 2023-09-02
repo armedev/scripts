@@ -1,6 +1,9 @@
 # Scripts
 
-this repo contains all the scripts which will be helpfull to get going with convenience in terminal
+This repo contains all the scripts which will be helpfull to get going with convenience in terminal
+In order for this repo to work you should have the path of this folder in your `$PATH`.
+
+This can also be done by cloning dotfiles repo and symnlinking the `.z*` files in the repo from the `$HOME` directory
 
 ## TFF
 

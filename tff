@@ -1,0 +1,15 @@
+#!/bin/sh
+
+cd $HOME/Developer
+
+selected=$(ls -d -- */* | fzf)
+
+# echo $(pwd)/$selected
+
+if test ! -z $selected; then
+  if tmux list-sessions | grep -qs $selected; then
+    tmux switchc -t $selected
+  else
+    tmux new-session -c $(pwd)/$selected -s $selected -d && tmux switchc -t $selected
+  fi
+fi

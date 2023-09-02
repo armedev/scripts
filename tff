@@ -1,15 +1,21 @@
 #!/bin/sh
 
-cd $HOME/Developer
+cd $HOME
 
-selected=$(ls -d -- */* | fzf)
+# list of all the directories
+list=(
+$(ls -d -- Developer/**/*)
+"scripts"
+"dotfiles"
+)
 
-# echo $(pwd)/$selected
+# selected string
+selected=$(echo ${list[@]} | tr " " "\n" | fzf)
 
 if test ! -z $selected; then
   if tmux list-sessions | grep -qs $selected; then
-    tmux switchc -t $selected
+    tmux switchc -t "$selected"
   else
-    tmux new-session -c $(pwd)/$selected -s $selected -d && tmux switchc -t $selected
+    tmux new-session -c $(pwd)/$selected -s "$selected" -d && tmux switchc -t $selected
   fi
 fi

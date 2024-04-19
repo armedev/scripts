@@ -15,3 +15,15 @@ prerequisites:
 - [fzf](https://github.com/junegunn/fzf)
 - [tmux](https://github.com/tmux/tmux)
 - a directory named `$HOME/Developer`
+
+## NFF
+
+nff is a bash script which requires **fuzzy finder** to work.
+it lists all the parent directories in Developer folder in the home directory with also a dummy placeholder to select new parent.
+then proceed to prompt the user for a new directory name
+
+prerequisites:
+
+- [fzf](https://github.com/junegunn/fzf)
+- [tmux](https://github.com/tmux/tmux)
+- a directory named `$HOME/Developer`

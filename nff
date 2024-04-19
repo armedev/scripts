@@ -11,7 +11,12 @@ $(ls -d -- Developer/*)
 # selected string
 selected=$(echo ${list[@]} | tr " " "\n" | fzf --header "select Parent Directory[new/any]" --prompt='▶' --pointer='→')
 
-if test $selected = "[new]"; then
+if test -z $selected; then 
+  echo "Select any Parent directory or [new] to create new parent\nexiting....";
+  exit 1;
+fi
+
+if test ! -z $selected && test $selected = "[new]"; then
   # change the cwd to root "Developer"
   cd Developer || exit 1
   read -p "Enter parent & directory name(parent/dir): " dir

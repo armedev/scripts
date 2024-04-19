@@ -5,6 +5,7 @@ cd $HOME
 # list of all the directories
 list=(
 $(ls -d -- Developer/**/*)
+$(ls -d -- Developer/*)
 "scripts"
 "dotfiles"
 )

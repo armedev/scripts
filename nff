@@ -1,0 +1,36 @@
+#!/bin/sh
+
+cd $HOME
+
+# list of all the parent
+list=(
+$(ls -d -- Developer/*)
+"[new]"
+)
+
+# selected string
+selected=$(echo ${list[@]} | tr " " "\n" | fzf --header "select Parent Directory[new/any]" --prompt='▶' --pointer='→')
+
+if test $selected = "[new]"; then
+  # change the cwd to root "Developer"
+  cd Developer || exit 1
+  read -p "Enter parent & directory name(parent/dir): " dir
+  mkdir -p "$dir" || exit 1
+  dir="Developer/$dir"
+else 
+  # change the cwd to selected
+  cd "$selected" || exit 1
+  read -p "Enter directory name: " dir
+  mkdir "$dir" || exit 1
+  dir="$selected/$dir"
+fi
+
+echo "$dir"
+
+cd $HOME
+
+if tmux list-sessions | grep -qs $dir; then
+  tmux switchc -t "$dir"
+else
+  tmux new-session -c $(pwd)/$dir -s "$dir" -d && tmux switchc -t $dir
+fi

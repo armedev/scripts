@@ -6,15 +6,16 @@ cd $HOME
 list=(
 $(ls -d -- Developer/**/*)
 $(ls -d -- Developer/*)
+$(ls -d -- Developer/hack/**/*)
 "scripts"
 "dotfiles"
 )
 
 # selected string
-selected=$(echo ${list[@]} | tr " " "\n" | fzf)
+selected=$(echo ${list[@]} | tr " " "\n" | fzf --header "select Directory" --prompt='▶' --pointer='→')
 
 if test ! -z $selected; then
-  if tmux list-sessions | grep -qs $selected; then
+  if tmux list-sessions -F "#{session_name}" | grep -qsx $selected; then
     tmux switchc -t "$selected"
   else
     tmux new-session -c $(pwd)/$selected -s "$selected" -d && tmux switchc -t $selected

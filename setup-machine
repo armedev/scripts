@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+pushd ~ > /dev/null
+
+default_dir="$(pwd)/dotfiles"
+
+echo "using $default_dir as target dir"
+
+dir=${1:-$default_dir}
+
+base_files=(
+".zcustom"
+".zprofile"
+".zshenv"
+".zshrc"
+)
+
+config_files=(
+"nvim"
+"tmux"
+"wezterm"
+)
+
+echo "~: linking started"
+for i in "${base_files[@]}"; do
+	ln -svf "$dir/$i" "$i" || exit
+done
+echo "~: linking done"
+
+echo ".config: linking started"
+mkdir -p .config && pushd .config > /dev/null || exit
+for i in "${config_files[@]}"; do
+	echo $i
+	ln -svf "$dir/$i" "$i" || exit
+done
+popd > /dev/null
+echo ".config: linking done"
+
+
+popd > /dev/null

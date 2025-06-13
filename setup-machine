@@ -23,15 +23,14 @@ config_files=(
 
 echo "~: linking started"
 for i in "${base_files[@]}"; do
-	ln -svf "$dir/$i" "$i" || exit
+	ln -svfT "$dir/$i" "$i" || exit
 done
 echo "~: linking done"
 
 echo ".config: linking started"
 mkdir -p .config && pushd .config > /dev/null || exit
-for i in "${config_files[@]}"; do
-	echo $i
-	ln -svf "$dir/$i" "$i" || exit
+for j in "${config_files[@]}"; do
+	ln -svfT "$dir/$j" "$j" || exit
 done
 popd > /dev/null
 echo ".config: linking done"

@@ -25,16 +25,26 @@ config_files=(
 "wezterm"
 )
 
+link() {
+  if [[ "$(uname)" == "Darwin" ]]; then
+    # macOS-specific ln
+    ln -svfF  $1 $2 || exit
+  else
+    # Linux-specific ln
+    ln -svfT $1 $2 || exit
+  fi
+}
+
 echo "~: linking started"
 for i in "${base_files[@]}"; do
-	ln -svfT "$dir/$i" "$i" || exit
+  link "$dir/$i" "$i"
 done
 echo "~: linking done"
 
 echo ".config: linking started"
 mkdir -p .config && pushd .config > /dev/null || exit
 for j in "${config_files[@]}"; do
-	ln -svfT "$dir/$j" "$j" || exit
+  link "$dir/$j" "$j"
 done
 popd > /dev/null
 echo ".config: linking done"

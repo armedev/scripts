@@ -9,7 +9,7 @@ echo "using $default_dir as target dir"
 dir=${1:-$default_dir}
 
 base_files=(
-".zcustom"
+".zexports"
 ".zprofile"
 ".zshenv"
 ".zshrc"

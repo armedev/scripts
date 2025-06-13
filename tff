@@ -4,9 +4,9 @@ cd $HOME
 
 # list of all the directories
 list=(
-$(ls -d -- Developer/**/* 2> /dev/null || echo)
-$(ls -d -- Developer/* 2> /dev/null || echo)
-$(ls -d -- Developer/hack/**/* 2> /dev/null|| echo)
+$(ls -d -- Developer/**/* 2> /dev/null || :)
+$(ls -d -- Developer/* 2> /dev/null || :)
+$(ls -d -- Developer/hack/**/* 2> /dev/null|| :)
 "scripts"
 "dotfiles"
 )

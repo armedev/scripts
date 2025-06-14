@@ -1,53 +1,170 @@
 #!/usr/bin/env bash
 
-# initial deps
-git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+set -euo pipefail
 
-# linking
-pushd ~ > /dev/null
+# ─────────
+# Help Text
+# ─────────
+show_help() {
+cat << EOF
+Usage: $(basename "$0") [OPTIONS]
 
-default_dir="$(pwd)/dotfiles"
+Options:
+  -d, --dir DIR       Directory containing dotfiles (default: ~/dotfiles)
+  -n, --dry-run       Print the actions without executing them
+  -f, --force         Force overwrite existing directories by deleting them, by default directories are not overwritten
+  --no-confirm        Avoid asking for confirmation while deleting directories (used with -f, --force)
+  --with-hypr         Include Hyprland config linking
+  -h, --help          Show this help message
 
-echo "using $default_dir as target dir"
+  This script links dotfiles to appropriate places(overwrites the files).
+EOF
+}
 
-dir=${1:-$default_dir}
+# ────────
+# Defaults
+# ────────
+default_dir="${HOME}/dotfiles"
+target_dir="$default_dir"
+dry_run=false
+force=false
+no_confirm=false
+with_hypr=false
 
+# ───────────────
+# Parse Arguments
+# ───────────────
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -d|--dir)
+      target_dir="$2"
+      shift 2
+      ;;
+    -n|--dry-run)
+      dry_run=true
+      shift
+      ;;
+    -f|--force)
+      force=true
+      shift
+      ;;
+    --no-confirm)
+      no_confirm=true
+      shift
+      ;;
+    --with-hypr)
+      with_hypr=true
+      shift
+      ;;
+    -h|--help)
+      show_help
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $1"
+      show_help
+      exit 1
+      ;;
+  esac
+done
+
+# ─────
+# Setup
+# ─────
+echo "🔧 Using target dotfiles directory: $target_dir"
+
+# Ensure TPM is installed
+if [[ "$dry_run" == false ]]; then
+  if [[ ! -d "$HOME/.tmux/plugins/tpm" ]]; then
+    echo "📦 Cloning TPM..."
+    git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
+  fi
+fi
+
+# Detect OS and set ln options accordingly
+case "$(uname)" in
+  Darwin)
+    ln_opts="-svfF"
+    ;;
+  Linux)
+    ln_opts="-svfT"
+    ;;
+  *)
+    echo "❌ Unsupported OS: $(uname)"
+    exit 1
+    ;;
+esac
+
+# ─────────────
+# Link Function
+# ─────────────
+link() {
+  local src="$1"
+  local dest="$2"
+
+  if $dry_run; then
+    echo "[dry-run] Would link: $src → $dest"
+    return
+  fi
+
+  if [[ -e "$dest" && ! -L "$dest" ]]; then
+    if $force; then
+      if ! $no_confirm; then
+        read -rp "⚠️ Remove existing target $dest? [y/N] " confirm
+        [[ "$confirm" =~ ^[Yy]$ ]] || {
+          echo "⏭️ Skipping: $dest (user declined)"
+          return
+        }
+      fi
+      echo "🗑 Removing: $dest"
+      rm -r "$dest"
+    else
+      echo "⏭️ Skipping (exists, use --force): $dest"
+      return
+    fi
+  fi
+
+  ln $ln_opts "$src" "$dest"
+}
+
+# ─────────────
+# Files to Link
+# ─────────────
 base_files=(
-".zexports"
-".zprofile"
-".zshenv"
-".zshrc"
+  ".zexports"
+  ".zprofile"
+  ".zshenv"
+  ".zshrc"
 )
 
 config_files=(
-"nvim"
-"tmux"
-"wezterm"
+  "nvim"
+  "tmux"
+  "wezterm"
 )
+if [[ "$with_hypr" == true ]]; then
+  config_files+=("hypr")
+fi
 
-link() {
-  if [[ "$(uname)" == "Darwin" ]]; then
-    # macOS-specific ln
-    ln -svfF  $1 $2 || exit
-  else
-    # Linux-specific ln
-    ln -svfT $1 $2 || exit
-  fi
-}
+# ─────────────
+# Link Dotfiles
+# ─────────────
+echo "📁 Linking base files to ~"
+pushd "$HOME" > /dev/null
 
-echo "~: linking started"
-for i in "${base_files[@]}"; do
-  link "$dir/$i" "$i"
+for file in "${base_files[@]}"; do
+  link "$target_dir/$file" "$HOME/$file"
 done
-echo "~: linking done"
 
-echo ".config: linking started"
-mkdir -p .config && pushd .config > /dev/null || exit
-for j in "${config_files[@]}"; do
-  link "$dir/$j" "$j"
+echo "📁 Linking .config files"
+mkdir -p "$HOME/.config"
+pushd "$HOME/.config" > /dev/null
+
+for cfg in "${config_files[@]}"; do
+  link "$target_dir/$cfg" "$HOME/.config/$cfg"
 done
-popd > /dev/null
-echo ".config: linking done"
-
 
 popd > /dev/null
+popd > /dev/null
+
+echo "✅ Linking complete!"

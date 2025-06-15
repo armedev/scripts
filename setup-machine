@@ -37,7 +37,13 @@ with_hypr=false
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -d|--dir)
-      target_dir="$2"
+      next_arg="${2-}"
+      if [[ -z "$next_arg" || "$next_arg" == -* ]]; then
+        echo "Error: --dir requires a non-empty argument."
+        show_help
+        exit 1
+      fi
+      target_dir="$next_arg"
       shift 2
       ;;
     -n|--dry-run)
@@ -67,6 +73,12 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+if $no_confirm && ! $force; then
+  echo "Error: --no-confirm requires --force argument to be set"
+  show_help
+  exit 1
+fi
 
 # ─────
 # Setup

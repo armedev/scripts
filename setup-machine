@@ -145,7 +145,7 @@ link() {
 base_files=(
   ".zexports"
   ".zprofile"
-  ".zshenv"
+  ".zau"
   ".zshrc"
 )
 

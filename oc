@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# ~/scripts/oc : switch or rotate the active OpenCode Go key
+set -euo pipefail
+
+dir="$HOME/.config/opencode/keys"
+active="$dir/go-active"
+
+if [[ $# -gt 0 ]]; then
+  target="$1"
+else
+  keys=()
+  for f in "$dir"/*; do
+    name=$(basename "$f")
+    [[ "$name" == "go-active" ]] && continue
+    keys+=("$name")
+  done
+
+  if [[ ${#keys[@]} -eq 0 ]]; then
+    echo "no keys in $dir" >&2
+    exit 1
+  fi
+
+  cur=""
+  [[ -L "$active" ]] && cur=$(basename "$(readlink "$active")")
+
+  target="${keys[0]}"
+  for i in "${!keys[@]}"; do
+    if [[ "${keys[$i]}" == "$cur" ]]; then
+      target="${keys[$(( (i + 1) % ${#keys[@]} ))]}"
+      break
+    fi
+  done
+fi
+
+if [[ ! -f "$dir/$target" ]]; then
+  echo "no such key: $target" >&2
+  exit 1
+fi
+
+ln -sfn "$dir/$target" "$active"
+echo "opencode-go -> $target"
